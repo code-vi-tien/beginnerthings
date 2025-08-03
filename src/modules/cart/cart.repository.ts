@@ -2,10 +2,11 @@ import { BadRequestException, Injectable, NotFoundException } from "@nestjs/comm
 import { PrismaService } from "src/prisma/prisma.service";
 import { CartItemDTO } from "./dto/cart-item.dto";
 import { Cart, CartItem } from "@prisma/client";
+import { ICartRepo } from "./interface/cart.repository.interface";
 
 
 @Injectable()
-export class CartRepo {
+export class CartRepo implements ICartRepo {
     constructor(private prisma: PrismaService) {}
 
     async upsertCart(userId: string, dto: CartItemDTO): Promise<CartItem> {
