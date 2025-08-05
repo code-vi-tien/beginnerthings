@@ -1,15 +1,14 @@
-import { IsInt, IsOptional, IsString, IsNotEmpty, Min } from "class-validator";
+import { IsInt, IsOptional, IsString, IsNotEmpty, Min, IsDecimal } from "class-validator";
 
 export class CartItemDTO {
     @IsString()
     @IsNotEmpty()
-    productId: string;
+    productVariantId: string;
 
     @IsInt()
     @Min(1)
     quantity: number;
 
-    @IsOptional()
-    @IsString()
-    variant?: string;
+    @IsDecimal()
+    price: string;
 }

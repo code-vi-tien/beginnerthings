@@ -24,9 +24,10 @@ model User {
 
 model Cart {
   id                    String              @id @default(uuid())
-  user                  User?               @relation(fields: [userId], references: [id])
+  user                  User                @relation(fields: [userId], references: [id])
   userId                String              @unique
   status                CartStatus          @default(ACTIVE)
+
   createdAt             DateTime            @default(now())
   updatedAt             DateTime            @updatedAt
   lastActiveAt          DateTime            @default(now())
@@ -36,53 +37,81 @@ model Cart {
 
 model CartItem {
   id                    String              @id @default(uuid())
-  cart                  Cart?               @relation(fields: [cartId], references: [id])
-  cartId                String?
-  product               Product?            @relation(fields: [productId], references: [id])
-  productId             String
-  @@unique([cartId, productId, variant])
-  variant               String?
+  cart                  Cart                @relation(fields: [cartId], references: [id])
+  cartId                String
+  productVariant        ProductVariant      @relation(fields: [productVariantId], references: [id])
+  productVariantId      String
+  @@unique([cartId, productVariantId])
   quantity              Int                 @default(1)
-  priceSnapshot         Float     
+  priceSnapshot         Decimal             @db.Decimal(10, 2)
+
   createdAt             DateTime            @default(now())
   updatedAt             DateTime            @updatedAt
 }
 
 model Product {
   id                    String              @id @default(uuid())
-  name                  String              
-  price                 Float
-  stock                 Int
+  name                  String 
+
   createdAt             DateTime            @default(now())
   updatedAt             DateTime            @updatedAt
 
+  variants              ProductVariant[]        
+}
+
+model ProductVariant {
+  id                    String              @id @default(uuid())
+  product               Product             @relation(fields: [productId], references: [id])
+  productId             String
+  variant               String?
+  price                 Decimal             @db.Decimal(10, 2)
+  stock                 Int                 @default(0)
+
   cartItems             CartItem[]
+  orderItems            OrderItem[]
 }
 
 model Order {
   id                    String              @id @default(uuid())
   user                  User?               @relation(fields: [userId], references: [id])
   userId                String?
-  payment               Payment?            @relation(fields: [paymentId], references: [id])
-  paymentId             String?             @unique
   status                OrderStatus         @default(PENDING)
-  subtotal              Float
-  tax                   Float       
-  total                 Float 
-  cartSnapshot          Json
+  subtotal              Decimal             @db.Decimal(10, 2)
+  tax                   Decimal             @db.Decimal(10, 2)       
+  total                 Decimal             @db.Decimal(10, 2)
+
+  orderItems            OrderItem[]
+  payments              Payment[]
+
   createdAt             DateTime            @default(now())
   updatedAt             DateTime            @updatedAt
+}
+
+model OrderItem {
+  id                    String              @id @default(uuid())
+  order                 Order               @relation(fields: [orderId], references: [id])
+  orderId               String
+  productVariant        ProductVariant      @relation(fields: [productVariantId], references: [id])
+  productVariantId      String
+  quantity              Int
+  priceSnapshot         Decimal             @db.Decimal(10, 2)
+
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  @@unique([orderId, productVariantId])
 }
 
 model Payment {
   id                    String              @id @default(uuid())
   user                  User?               @relation(fields: [userId], references: [id])
   userId                String?
-  order                 Order?                      
+  order                 Order?              @relation(fields: [orderId], references: [id])
+  orderId               String?                  
   provider              PaymentProvider
-  providerSessionId     String?             
+  providerSessionId     String?           
   status                PaymentStatus       @default(INITIATED)
-  amount                Float    
+  amount                Decimal             @db.Decimal(10, 2) 
+
   createdAt             DateTime            @default(now())
   updatedAt             DateTime            @updatedAt
 }
@@ -96,7 +125,6 @@ enum Role {
 enum CartStatus {
   ACTIVE
   ABANDONED
-  CHECKED_OUT
 }
 
 enum OrderStatus {
@@ -116,8 +144,4 @@ enum PaymentStatus {
   INITIATED
   SUCCEEDED
   FAILED
-}
-
-model DebugTest {
-  id String   @id@default(uuid())
 }

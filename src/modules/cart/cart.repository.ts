@@ -7,86 +7,45 @@ import { ICartRepo } from "./interface/cart.repository.interface";
 
 @Injectable()
 export class CartRepo implements ICartRepo {
-    constructor(private prisma: PrismaService) {}
+    constructor(private prisma: PrismaService) {};
 
-    async upsertCart(userId: string, dto: CartItemDTO): Promise<CartItem> {
-        const { productId, quantity, variant } = dto
-        
-        if (quantity < 0) {
-        throw new BadRequestException('Quantity cannot be a negative number.');
-        }
-        /*Find product*/
-        const product = await this.prisma.product.findUnique({
-            where: {id: productId},
-            select: {price: true}
-        })
-        if (!product) {
-            throw new NotFoundException(`Product with ID: ${productId} not found.`)
-        }
-        const priceSnapshot = product.price;    
-        
-        /*Find cart*/
-        let cart = await this.prisma.cart.findFirst({
-            where: { userId: userId },
-            select: { id: true }
-        })
-        if (!cart) {
-        cart = await this.prisma.cart.create({
+    async createCart(userId) {
+        return await this.prisma.cart.create({
             data: {
                 userId: userId,
                 status: 'ACTIVE'
-                }
-            });
-        }
-        const cartId = cart.id
-
-        /* Check for item exist or not */
-        const existingItem = await this.prisma.cartItem.findFirst({
-            where: { cartId: cartId,
-                productId: productId,
-                variant: variant || ''
             }
-        })
-        if (existingItem) {
-            return this.prisma.cartItem.update({
-            where: { id: existingItem.id },
-            data: { quantity: existingItem.quantity + quantity }
-            })
-        }
+        });
+    };
 
-        if (quantity === 0) {
-            try {
-                const existingItem = await this.prisma.cartItem.findFirst({
-                where: { cartId, productId, variant: variant || '' }
-                });
-                if (existingItem) {
-                    return this.prisma.cartItem.delete({
-                        where: { id: existingItem.id }
-                    })
-                }
-                return null
-            } catch (error) {
-                console.log(`Error getting the item: ${error}`)
-                return null
-            }
-        }
+    async findCartByUserId(userId) {
+        return await this.prisma.cart.findFirst({
+            where: userId
+        });
+    };
 
-        return await this.prisma.cartItem.create({
-            data: { 
-                product: {
-                    connect: {
-                        id: productId,
-                    },
+    async upsertCart(cartId: string, dto: CartItemDTO): Promise<CartItem> {
+        const { productVariantId, quantity, price } = dto;
+
+        return await this.prisma.cartItem.upsert({
+            where: { 
+                cartId_productVariantId: { 
+                    cartId: cartId,
+                    productVariantId: productVariantId,
                 },
-                cart: {
-                    connect: {
-                        id: cartId,
-                    },
+            },
+            create: {
+                cartId: cartId,
+                productVariantId: productVariantId,
+                quantity: quantity,
+                priceSnapshot: price,
+            },
+            update: {
+                quantity: {
+                    increment: quantity,
                 },
-                priceSnapshot: priceSnapshot,
-                quantity,
-                variant: variant || ''
-            }
+                priceSnapshot: price,
+            },
         });
     };
 
@@ -96,7 +55,7 @@ export class CartRepo implements ICartRepo {
             include: {
                 cartItems: {
                     include: {
-                        product: true
+                        productVariant: true
                     }
                 }
             }
