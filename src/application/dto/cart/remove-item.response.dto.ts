@@ -1,11 +1,11 @@
 import { Expose } from "class-transformer";
 
-export class CartItemResponseDTO {
+export class RemoveItemResponseDTO {
   @Expose()
   id: string;
 
   @Expose()
-  productId: string;
+  productVariantId: string;
 
   @Expose()
   quantity: number;
@@ -13,7 +13,7 @@ export class CartItemResponseDTO {
   @Expose()
   variant?: string;
 
-  constructor(partial: Partial<CartItemResponseDTO>) {
+  constructor(partial: Partial<RemoveItemResponseDTO>) {
     Object.assign(this, partial)
   }
 }

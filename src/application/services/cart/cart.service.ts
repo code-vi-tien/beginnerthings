@@ -1,13 +1,13 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 
-import { CartItemDTO } from './dto/cart-item.dto';
-import { CartItemResponseDTO } from './dto/cart-item.response.dto';
-import { GetCartResponseDTO } from './dto/get-cart.response.dto';
-import { RemoveItemResponseDTO } from './dto/remove-item.response.dto';
+import { CartItemDTO } from '../../dto/cart/cart-item.dto';
+import { CartItemResponseDTO } from '../../dto/cart/cart-item.response.dto';
+import { CartResponseDTO } from '../../dto/cart/cart.response.dto';
+import { RemoveItemResponseDTO } from '../../dto/cart/remove-item.response.dto';
 
-import { ICartRepo } from './interface/cart.repository.interface';
-import { ICartService } from './interface/cart.service.interface';
+import { ICartRepo } from '../../../domain/interfaces/repositories/cart.repository.interface';
+import { ICartService } from '../../../domain/interfaces/services/cart.service.interface';
 import { ProductService } from '../product/product.service';
 
 
@@ -24,7 +24,7 @@ export class CartService implements ICartService{
       /* Simple request validation */
       if (dto.quantity <= 0) {
         throw new BadRequestException('Quantity must be a positive number.');
-      }
+      } 
       if (dto.quantity > productVariant.stock ) {
         throw new BadRequestException(`Not enough stock available`);
       }
@@ -48,9 +48,9 @@ export class CartService implements ICartService{
       }
   };
 
-  async getCart(userId): Promise<GetCartResponseDTO> {
-    const cart = await this.cartRepo.getCart(userId);
-    return plainToInstance(GetCartResponseDTO, cart, {
+  async getCart(userId): Promise<CartResponseDTO> {
+    const cart = await this.cartRepo.getCartDetails(userId);
+    return plainToInstance(CartResponseDTO, cart, {
       excludeExtraneousValues: true,
     });
   };

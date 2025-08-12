@@ -1,9 +1,24 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
-import { PrismaService } from "src/prisma/prisma.service";
-import { CartItemDTO } from "./dto/cart-item.dto";
-import { Cart, CartItem } from "@prisma/client";
-import { ICartRepo } from "./interface/cart.repository.interface";
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { PrismaService } from "src/infrastructure/database/prisma/prisma.service";
+import { CartItemDTO } from "../../application/dto/cart/cart-item.dto";
+import { CartItem, Prisma } from "@prisma/client";
+import { ICartRepo } from "../../domain/interfaces/repositories/cart.repository.interface";
+import { CartDetailsEntity } from "src/domain/entities/cart-details.entity";
 
+const cartDetails = Prisma.validator<Prisma.CartDefaultArgs>()({
+    include: {
+        cartItems: {
+            include: {
+                productVariant: {
+                    include: {
+                        product: true
+                    }
+                }
+            }
+        }
+    }
+});
+export type CartDetails = Prisma.CartGetPayload<typeof cartDetails>
 
 @Injectable()
 export class CartRepo implements ICartRepo {
@@ -49,17 +64,23 @@ export class CartRepo implements ICartRepo {
         });
     };
 
-    async getCart(userId: string): Promise<Cart> {
-        return this.prisma.cart.findFirst({
-            where: { userId },
-            include: {
-                cartItems: {
-                    include: {
-                        productVariant: true
-                    }
-                }
-            }
-        })
+    async getCartDetails(userId: string): Promise<CartDetailsEntity | null> {
+        const cart: CartDetails | null = await this.prisma.cart.findFirst({
+            where: { 
+                userId: userId,
+                status: 'ACTIVE'
+             },
+            ...cartDetails
+        });
+
+        if (!cart) return null;
+
+        return new CartDetailsEntity (
+            cart.id,
+            cart.userId,
+            cart.cartItems,
+        )
+
     };
 
     async removeCartItem(userId: string, cartItemId: string): Promise<CartItem> {

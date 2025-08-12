@@ -1,7 +1,7 @@
 import { Expose, Transform, Type } from "class-transformer";
-import { GetCartItemResponseDTO } from "./get-cart-item.response.dto";
+import { CartItemDetailsDTO } from "./cart-item-details.dto";
 
-export class GetCartResponseDTO {
+export class CartResponseDTO {
     @Expose()
     id: string;
 
@@ -16,7 +16,7 @@ export class GetCartResponseDTO {
 
     @Expose()
     @Transform(({ obj }) => 
-        obj.cartItems.reduce((acc, item) => acc + (item.quantity * item.priceSnapshot), 0)
+        obj.cartItems.reduce((acc, item) => acc + (item.quantity * item.priceSnapshot.toNumber()), 0)
     )
     subtotal: number;
 
@@ -26,6 +26,6 @@ export class GetCartResponseDTO {
     totalItemsCount: number;
 
     @Expose()
-    @Type(() => GetCartItemResponseDTO)
-    cartItems: GetCartItemResponseDTO[];
+    @Type(() => CartItemDetailsDTO)
+    cartItems: CartItemDetailsDTO[];
 }

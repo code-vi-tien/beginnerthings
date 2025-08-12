@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
-import { CartItemDTO } from "../cart/dto/cart-item.dto";
-import { ProductRepo } from "./product.repository";
+import { CartItemDTO } from "../../dto/cart/cart-item.dto";
+import { ProductRepo } from "../../../infrastructure/repositories/product.repository";
 
 @Injectable()
 export class ProductService {
