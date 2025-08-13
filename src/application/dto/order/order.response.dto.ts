@@ -1,8 +1,35 @@
 import { Expose, Transform, Type } from "class-transformer";
+import { IsDecimal, IsString } from "class-validator";
+import { ProductDTO } from "../product/product.dto";
 import { ProductVariantDTO } from "../product/product-variant.dto";
-import { ProductDTO } from "src/application/dto/product/product.dto";
 
-export class CartItemDetailsDTO {
+export class OrderResponseDTO {
+    @Expose()
+    @IsString()
+    id: string;
+
+    @Expose()
+    @IsString()
+    cartId: string;
+
+    @Expose()
+    @IsDecimal()
+    subtotal: number;
+
+    @Expose()
+    @IsDecimal()
+    tax: number;
+
+    @Expose()
+    @IsDecimal()
+    total: number;
+
+    @Expose()
+    @Type(() => OrderItemsDTO)
+    orderItems: OrderItemsDTO[];
+}
+
+export class OrderItemsDTO {
     @Expose()
     id: string;
 

@@ -1,5 +1,4 @@
-import { Cart, CartItem } from '@prisma/client';
-import { CartItemDTO } from '../../../application/dto/cart/cart-item.dto';
+import { CartItem } from '@prisma/client';
 import { CartDetailsEntity } from 'src/domain/entities/cart-details.entity';
 
 
@@ -12,5 +11,7 @@ export interface ICartRepo {
 
     getCartDetails(userId: string): Promise<CartDetailsEntity>;
     
+    findItem(cartItemId: string): Promise<CartItem>;
+
     removeCartItem(userId: string, cartItemId: string): Promise<CartItem>;
-}
+} 

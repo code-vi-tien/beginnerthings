@@ -1,15 +1,15 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
-import { CartItemDTO } from "../../dto/cart/cart-item.dto";
+import { ItemDTO } from "../../dto/item/item.dto";
 import { ProductRepo } from "../../../infrastructure/repositories/product.repository";
+import { IProductService } from "src/domain/interfaces/services/product.service.interface";
 
 @Injectable()
-export class ProductService {
+export class ProductService implements IProductService {
     constructor(private readonly productRepo: ProductRepo) {}
 
-    async findProductVariant(dto: CartItemDTO) {
-        const { productVariantId } = dto;
+    async findProductVariant(dto: ItemDTO) {
 
-        const productVariant  = await this.productRepo.findProduct(productVariantId);
+        const productVariant  = await this.productRepo.findProduct(dto.id);
 
         if (!productVariant) {
             throw new NotFoundException('Product not found.');
@@ -17,4 +17,4 @@ export class ProductService {
 
         return productVariant
     }
-}
+} 

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "src/infrastructure/database/prisma/prisma.service";
-import { CartItemDTO } from "../../application/dto/cart/cart-item.dto";
+import { ItemDTO } from "../../application/dto/item/item.dto";
 import { CartItem, Prisma } from "@prisma/client";
 import { ICartRepo } from "../../domain/interfaces/repositories/cart.repository.interface";
 import { CartDetailsEntity } from "src/domain/entities/cart-details.entity";
@@ -39,7 +39,7 @@ export class CartRepo implements ICartRepo {
         });
     };
 
-    async upsertCart(cartId: string, dto: CartItemDTO): Promise<CartItem> {
+    async upsertCart(cartId: string, dto: ItemDTO): Promise<CartItem> {
         const { productVariantId, quantity, price } = dto;
 
         return await this.prisma.cartItem.upsert({
@@ -83,6 +83,14 @@ export class CartRepo implements ICartRepo {
 
     };
 
+    async findItem(cartItemId: string): Promise<CartItem> {
+        return await this.prisma.cartItem.findFirst({
+            where: {
+                id: cartItemId
+            }
+        })
+    }
+
     async removeCartItem(userId: string, cartItemId: string): Promise<CartItem> {
         const cartItem = await this.prisma.cartItem.findFirst({
             where: { 
@@ -101,3 +109,4 @@ export class CartRepo implements ICartRepo {
         })
     };
 }
+ 

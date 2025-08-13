@@ -1,5 +1,5 @@
 import { Controller, Get, Delete, Req, Body, Param, Put } from "@nestjs/common";
-import { CartItemDTO } from "../../../application/dto/cart/cart-item.dto";
+import { CartItemDTO } from "../../../application/dto/item/item.dto";
 import { ICartService } from "../../../domain/interfaces/services/cart.service.interface";
 
 
@@ -24,4 +24,4 @@ export class CartController {
         const userId = req.user.id
         return await this.cartService.removeItem(userId, cartItemId)
     }
-}
+} 

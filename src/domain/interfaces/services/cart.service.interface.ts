@@ -1,14 +1,12 @@
-import { Cart, CartItem } from '@prisma/client';
-import { CartItemDTO } from '../../../application/dto/cart/cart-item.dto';
-import { CartItemResponseDTO } from '../../../application/dto/cart/cart-item.response.dto';
+import { ItemDTO } from '../../../application/dto/item/item.dto';
 import { CartResponseDTO } from '../../../application/dto/cart/cart.response.dto';
-import { RemoveItemResponseDTO } from '../../../application/dto/cart/remove-item.response.dto';
+import { CartItemResponseDTO } from 'src/application/dto/cart/cart-item.dto';
 
 
 export interface ICartService {
-    addItemToCart(userId: string, dto: CartItemDTO): Promise<CartItemResponseDTO>;
+    addItem(userId: string, dto: ItemDTO): Promise<CartItemResponseDTO>;
     
     getCart(userId): Promise<CartResponseDTO>;
 
-    removeItem(userId: string, cartItemId: string): Promise<RemoveItemResponseDTO>;
+    removeItem(userId: string, cartItemId: string): Promise<CartItemResponseDTO>;
 }

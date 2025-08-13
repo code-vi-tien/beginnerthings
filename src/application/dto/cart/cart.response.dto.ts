@@ -1,5 +1,6 @@
 import { Expose, Transform, Type } from "class-transformer";
-import { CartItemDetailsDTO } from "./cart-item-details.dto";
+import { ProductDTO } from "../product/product.dto";
+import { ProductVariantDTO } from "../product/product-variant.dto";
 
 export class CartResponseDTO {
     @Expose()
@@ -26,6 +27,29 @@ export class CartResponseDTO {
     totalItemsCount: number;
 
     @Expose()
-    @Type(() => CartItemDetailsDTO)
-    cartItems: CartItemDetailsDTO[];
+    @Type(() => CartDetailsDTO)
+    cartItems: CartDetailsDTO[];
+} 
+
+export class CartDetailsDTO {
+    @Expose()
+    id: string;
+
+    @Expose()
+    quantity: number; 
+
+    @Expose()
+    priceSnapshot: number;
+
+    @Expose()
+    @Type(() => ProductDTO)
+    product: ProductDTO;
+    
+    @Expose()
+    @Type(() => ProductVariantDTO)
+    productVariant: ProductVariantDTO;
+
+    @Expose()
+    @Transform(({ obj }) => obj.quantity * obj.priceSnapshot)
+    totalPrice: number;
 }
