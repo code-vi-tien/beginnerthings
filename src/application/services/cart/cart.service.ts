@@ -87,6 +87,5 @@ export class CartService implements ICartService{
       }
         throw new BadRequestException('An unexpected error occurred during removing item from cart.');
     }
-    
   };
 }
