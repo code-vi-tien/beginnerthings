@@ -1,28 +1,20 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "src/infrastructure/database/prisma/prisma.service";
-import { Order, Prisma } from "@prisma/client";
+import { Payment } from "@prisma/client";
+import { IPaymentRepo } from "src/domain/interfaces/repositories/payment.repository.interface";
 
 @Injectable()
-export class OrderRepo {
+export class PaymentRepo implements IPaymentRepo{
     constructor(private prisma: PrismaService) {}
 
-    async createOrder(userId: string, orderData): Promise<Order> {
-        return await this.prisma.order.create({
+    async createPayment(userId: string, orderData): Promise<Payment> {
+        return await this.prisma.payment.create({
             data: {
                 userId: userId,
-                cartId: orderData.cartId,
-                subtotal: new Prisma.Decimal(orderData.subtotal),
-                tax: new Prisma.Decimal(orderData.tax),
-                total: new Prisma.Decimal(orderData.total),
-                orderItems: {
-                    createMany: {
-                        data: orderData.orderItems
-                    }
-                },
-            },
-            include: {
-                orderItems: true
+                orderId: orderData.id,
+                address: orderData.address,
+                amount: orderData.totalAmount
             }
-        })
-    }
+        });
+    };
 }   

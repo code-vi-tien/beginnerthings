@@ -24,7 +24,7 @@ export type CartDetails = Prisma.CartGetPayload<typeof cartDetails>
 export class CartRepo implements ICartRepo {
     constructor(private prisma: PrismaService) {};
 
-    async createCart(userId) {
+    async createCart(userId: string) {
         return await this.prisma.cart.create({
             data: {
                 userId: userId,
@@ -33,10 +33,16 @@ export class CartRepo implements ICartRepo {
         });
     };
 
-    async findCartByUserId(userId) {
+    async findCart(cartId: string) {
         return await this.prisma.cart.findFirst({
-            where: userId
+            where: {id: cartId}
         });
+    };
+
+    async findCartByUserId(userId: string) {
+        return await this.prisma.cart.findFirst({
+            where: {userId: userId}
+        })
     };
 
     async upsertCart(cartId: string, dto: ItemDTO): Promise<CartItem> {
@@ -64,10 +70,10 @@ export class CartRepo implements ICartRepo {
         });
     };
 
-    async getCartDetails(userId: string): Promise<CartDetailsEntity | null> {
+    async getCartDetails(cartId: string): Promise<CartDetailsEntity | null> {
         const cart: CartDetails | null = await this.prisma.cart.findFirst({
             where: { 
-                userId: userId,
+                id: cartId,
                 status: 'ACTIVE'
              },
             ...cartDetails
@@ -91,13 +97,11 @@ export class CartRepo implements ICartRepo {
         })
     }
 
-    async removeCartItem(userId: string, cartItemId: string): Promise<CartItem> {
+    async removeCartItem(cartId: string, cartItemId: string): Promise<CartItem> {
         const cartItem = await this.prisma.cartItem.findFirst({
             where: { 
                 id: cartItemId,
-                cart: {
-                    userId: userId
-                },
+                cartId: cartId
              }
         });
         if (!cartItem) {
@@ -108,5 +112,4 @@ export class CartRepo implements ICartRepo {
             where: { id: cartItem.id }
         })
     };
-}
- 
+};

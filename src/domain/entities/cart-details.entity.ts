@@ -7,7 +7,7 @@ export class CartDetailsEntity {
 
     get subtotal(): number {
     return this.cartItems.reduce(
-      (sum, item) => sum + item.unitPrice * item.quantity,
+      (sum, item) => sum + item.priceSnapshot * item.quantity,
       0
     );
     }

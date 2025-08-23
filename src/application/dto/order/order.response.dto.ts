@@ -1,12 +1,34 @@
 import { Expose, Transform, Type } from "class-transformer";
-import { IsDecimal, IsString } from "class-validator";
+import { IsDecimal, IsNumber, IsString } from "class-validator";
 import { ProductDTO } from "../product/product.dto";
 import { ProductVariantDTO } from "../product/product-variant.dto";
 
 export class OrderResponseDTO {
+    constructor (
+        id: string,
+        userId: string,
+        cartId: string,
+        tax: number,
+        shippingFee: number,
+        total: number,
+        orderItems: any[]
+    ) {
+        this.id = id;
+        this.userId = userId;
+        this.cartId = cartId;
+        this.tax = tax;
+        this.shippingFee = shippingFee;
+        this.total = total;
+        this.orderItems = orderItems;
+    }
+
     @Expose()
     @IsString()
     id: string;
+
+    @Expose()
+    @IsString()
+    userId: string;
 
     @Expose()
     @IsString()
@@ -14,11 +36,11 @@ export class OrderResponseDTO {
 
     @Expose()
     @IsDecimal()
-    subtotal: number;
+    tax: number;
 
     @Expose()
     @IsDecimal()
-    tax: number;
+    shippingFee: number;
 
     @Expose()
     @IsDecimal()
@@ -31,12 +53,15 @@ export class OrderResponseDTO {
 
 export class OrderItemsDTO {
     @Expose()
+    @IsString()
     id: string;
 
     @Expose()
+    @IsNumber()
     quantity: number; 
 
     @Expose()
+    @IsDecimal()
     priceSnapshot: number;
 
     @Expose()
@@ -48,6 +73,7 @@ export class OrderItemsDTO {
     productVariant: ProductVariantDTO;
 
     @Expose()
+    @IsDecimal()
     @Transform(({ obj }) => obj.quantity * obj.priceSnapshot)
     totalPrice: number;
 }

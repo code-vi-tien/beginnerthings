@@ -1,13 +1,14 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 
-import { ItemDTO } from '../../dto/item/item.dto';
-import { CartResponseDTO } from '../../dto/cart/cart.response.dto';
 import { CartItemResponseDTO } from 'src/application/dto/cart/cart-item.dto';
+import { ItemDTO } from '../dto/item/item.dto';
+import { CartResponseDTO } from '../dto/cart/cart.response.dto';
 
-import { ICartRepo } from '../../../domain/interfaces/repositories/cart.repository.interface';
-import { ICartService } from '../../../domain/interfaces/services/cart.service.interface';
+import { ICartRepo } from 'src/domain/interfaces/repositories/cart.repository.interface';
+import { ICartService } from 'src/domain/interfaces/services/cart.service.interface';
 import { IProductService } from 'src/domain/interfaces/services/product.service.interface';
+
 
 @Injectable()
 export class CartService implements ICartService{
@@ -46,17 +47,17 @@ export class CartService implements ICartService{
       }
   };
 
-  async getCart(userId): Promise<CartResponseDTO> {
+  async getCart(userId: string, cartId: string): Promise<CartResponseDTO> {
     try {
-      let cart = await this.cartRepo.findCartByUserId(userId);
-      if (!cart) {
-        cart = await this.cartRepo.createCart(userId);
+      let cart = await this.cartRepo.findCart(cartId);
+      if (!cart || cart.userId !== userId) {
+        throw new NotFoundException('Cart not found for user');
       }
 
-      cart = await this.cartRepo.getCartDetails(userId);
+      cart = await this.cartRepo.getCartDetails(cartId);
 
       return plainToInstance(CartResponseDTO, cart, {
-      excludeExtraneousValues: true,
+        excludeExtraneousValues: true,
       });
 
     } catch (error) {
@@ -77,7 +78,7 @@ export class CartService implements ICartService{
       }
       cartItem = await this.cartRepo.removeCartItem(userId, cartItemId);
 
-      return new CartItemResponseDTO(cartItem);
+      return new CartItemResponseDTO(cartItem); 
 
     } catch (error) {
       console.error(`Error removing item from cart for user`, error);
