@@ -9,4 +9,4 @@ export class ProductVariantDTO {
 
     @Expose()
     variant?: string;
-}   
+}

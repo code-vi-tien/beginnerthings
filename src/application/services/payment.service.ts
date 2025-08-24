@@ -1,12 +1,10 @@
 import { Body, Injectable, NotFoundException, Req } from "@nestjs/common";
 import { plainToInstance } from "class-transformer";
 
-import { PaymentResponseDTO } from "src/application/dto/payment/create-payment.dto";
+import { createPaymentDTO } from "src/application/dto/payment/create-payment.dto";
 
 import { IOrderService } from "src/domain/interfaces/services/order.service.interface";
 import { IAdressService } from "src/domain/interfaces/services/address.service.interface";
-
-import { OrderEntity } from "src/domain/entities/order.entity";
 
 import { IPaymentRepo } from "src/domain/interfaces/repositories/payment.repository.interface";
 
@@ -18,9 +16,9 @@ export class PaymentService {
         private readonly addressService: IAdressService
     ) {};
 
-    async execute(userId: string): Promise<PaymentResponseDTO> {
+    async execute(userId: string, dto: createPaymentDTO): Promise<PaymentResponseDTO> {
         // Get order
-        const order: OrderEntity | null = await this.orderService.getOrder(userId);
+        const order = await this.orderService.getOrder(userId);
         if (!order || order.orderItems.length === 0) {
                 throw new NotFoundException('Order not found for this user.');
         }

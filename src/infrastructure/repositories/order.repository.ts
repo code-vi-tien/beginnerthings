@@ -45,4 +45,33 @@ export class OrderRepo implements IOrderRepo{
             orderItems
         );
     };
+
+    async getOrder(orderId: string): Promise<OrderEntity> {
+        const order = await this.prisma.order.findFirst({
+            where: {
+                id: orderId
+            },
+            include: {
+                orderItems: true
+            }
+        });
+
+        const orderItems = order.orderItems.map(item => new OrderItemEntity(
+            item.id,
+            item.productVariantId,
+            item.quantity,
+            item.priceSnapshot.toNumber()
+        ));
+
+        return new OrderEntity(
+            order.id,
+            order.userId,
+            order.cartId,
+            order.subtotal.toNumber(),
+            order.tax.toNumber(),
+            null,
+            order.total.toNumber(),
+            orderItems
+        );
+    };
 };
