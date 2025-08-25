@@ -7,5 +7,7 @@ export interface IOrderService {
 
     createOrder(userId: string, dto: CreateOrderDTO): Promise<OrderResponseDTO>;
 
-    getOrder(dto: GetOrderDTO): Promise<OrderResponseDTO>;
+    getOrder(orderId: string): Promise<OrderResponseDTO>;
+
+    validateOrder(orderId: string);
 }

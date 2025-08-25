@@ -1,7 +1,8 @@
-import { Body, Injectable, NotFoundException, Req } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException, Req } from "@nestjs/common";
 import { plainToInstance } from "class-transformer";
 
-import { createPaymentDTO } from "src/application/dto/payment/create-payment.dto";
+import { CreatePaymentDTO } from "src/application/dto/payment/create-payment.dto";
+import { PaymentResponseDTO } from "../dto/payment/payment.response.dto";
 
 import { IOrderService } from "src/domain/interfaces/services/order.service.interface";
 import { IAdressService } from "src/domain/interfaces/services/address.service.interface";
@@ -16,29 +17,32 @@ export class PaymentService {
         private readonly addressService: IAdressService
     ) {};
 
-    async execute(userId: string, dto: createPaymentDTO): Promise<PaymentResponseDTO> {
-        // Get order
-        const order = await this.orderService.getOrder(userId);
-        if (!order || order.orderItems.length === 0) {
-                throw new NotFoundException('Order not found for this user.');
+    async execute(userId: string, dto: CreatePaymentDTO): Promise<PaymentResponseDTO> {
+        try {
+            // Get order
+            const order = await this.orderService.getOrder(dto.orderId);
+            if (!order || order.orderItems.length === 0) {
+                    throw new NotFoundException('Order not found for this user.');
+            };
+
+            //Validate order items
+            let isNotItem = this.orderService.validateOrder(dto.orderId);
+            if (isNotItem) {
+                throw new BadRequestException(`Order with id: ${isNotItem} is invalid`)
+            };
+
+            // Initatiate payment
+            const payment = await this.paymentRepo.createPayment(userId, order);
+
+            return plainToInstance(PaymentResponseDTO, payment);
+
+        } catch (error) {
+            console.error(`Error fetching order for user`, error);
+
+            if (error instanceof NotFoundException || error instanceof BadRequestException) {
+                throw error; // Re-throw the specific error
+            }
+                throw new BadRequestException('An unexpected error occurred during fetching order.');
         }
-        
-        // Calculate cost
-        const addressData = order.address;
-        const address = await this.addressService.createAddress(addressData, userId);
-        
-        let subtotal = order.subtotal;
-        const taxAmount = subtotal * 0.1;
-        const shippingAmount = address.shippingFee;
-        const totalAmount = subtotal + taxAmount + shippingAmount;
-
-        // Initatiate payment
-        const payment = await this.paymentRepo.createPayment(userId, order);
-
-            // Call banking API
-
-            // Call transportation API
-
-        return plainToInstance(PaymentResponseDTO, payment);
     };
 }  

@@ -1,8 +1,9 @@
 import { Expose } from "class-transformer";
 import { IsString } from "class-validator";
 
-export class createPaymentDTO {
+export class CreatePaymentDTO {
     @Expose()
     @IsString()
     orderId: string;
 } 
+

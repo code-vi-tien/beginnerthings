@@ -12,13 +12,15 @@ import { IOrderRepo } from "src/domain/interfaces/repositories/order.repository.
 import { CreateOrderDTO } from "../dto/order/create-order.dto";
 import { OrderEntity, OrderItemEntity } from "src/domain/entities/order.entity";
 import { GetOrderDTO } from "../dto/order/get-order.dto";
+import { IProductService } from "src/domain/interfaces/services/product.service.interface";
 
 
 @Injectable()
 export class OrderService implements IOrderService{
     constructor(
         private readonly orderRepo: IOrderRepo,
-        private readonly cartService: ICartService
+        private readonly cartService: ICartService,
+        private readonly productService: IProductService
     ) {};
 
     private _calculateOrderTotals(cart: CartDetailsEntity) {
@@ -114,9 +116,9 @@ export class OrderService implements IOrderService{
         };
     };
 
-    async getOrder(dto: GetOrderDTO): Promise<OrderResponseDTO> {
+    async getOrder(orderId: string): Promise<OrderResponseDTO> {
         try {
-            const order = await this.orderRepo.getOrder(dto.id);
+            const order = await this.orderRepo.getOrder(orderId);
             if (!order || order.orderItems.length === 0) {
                 throw new NotFoundException('Cart not found for this user.');
             }
@@ -154,4 +156,28 @@ export class OrderService implements IOrderService{
                 throw new BadRequestException('An unexpected error occurred during fetching order.');
         }; 
     };
+
+    async validateOrder(orderId: string) {
+        try {
+            const order = await this.orderRepo.getOrder(orderId);
+            if (!order || order.orderItems.length) {
+                throw new NotFoundException ('Order not found for this user.');
+            }
+
+            // Validate each item
+            const productVariantIds = order.orderItems.map(item => item.productVariantId)
+            const 
+
+
+            return true;
+
+        } catch (error) {
+            console.error(`Error fetching order for user`, error);
+
+            if (error instanceof NotFoundException || error instanceof BadRequestException) {
+                throw error; // Re-throw the specific error
+            }
+                throw new BadRequestException('An unexpected error occurred during fetching order.');
+        }
+    }
 }   

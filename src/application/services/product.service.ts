@@ -1,13 +1,13 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 
 import { IProductService } from "src/domain/interfaces/services/product.service.interface";
 import { ItemDTO } from "../dto/item/item.dto";
 
-import { ProductRepo } from "src/infrastructure/repositories/product.repository";
+import { IProductRepo } from "src/domain/interfaces/repositories/product.repository.interface";
 
 @Injectable()
 export class ProductService implements IProductService {
-    constructor(private readonly productRepo: ProductRepo) {}
+    constructor(private readonly productRepo: IProductRepo) {}
 
     async findProductVariant(dto: ItemDTO) {
 
@@ -18,5 +18,16 @@ export class ProductService implements IProductService {
         }
 
         return productVariant
+    };
+
+    async validateProductVariants(productVariantIds: any[]) {
+        try {
+            const products = await this.productRepo.findManyProducts(productVariantIds);
+            if (!products)
+
+
+        } catch (error) {
+            
+        }
     }
 } 

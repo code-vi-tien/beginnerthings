@@ -1,8 +1,9 @@
 import { Injectable } from "@nestjs/common";
+import { IProductRepo } from "src/domain/interfaces/repositories/product.repository.interface";
 import { PrismaService } from "src/infrastructure/database/prisma/prisma.service";
 
 @Injectable()
-export class ProductRepo {
+export class ProductRepo implements IProductRepo {
     constructor(private readonly prisma: PrismaService) {}
 
     async findProduct(productId: string) {
@@ -11,5 +12,16 @@ export class ProductRepo {
                 productId: productId,
             }
         }); 
-    } 
+    } ;
+
+    async findManyProducts(productVariantIds: any[]) {
+        return await this.prisma.productVariant.findMany({
+            where: {
+                id: {in: productVariantIds}
+            },
+            include: {
+                product: true
+            }
+        });
+    };
 } 
