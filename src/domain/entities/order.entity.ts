@@ -16,6 +16,7 @@ export class OrderItemEntity {
     public readonly id: string,
     public readonly productVariantId: string | null,
     public readonly quantity: number,
-    public readonly priceSnapshot: number
+    public readonly priceSnapshot: number,
+    public readonly updatedAt: Date
   ) {}
 }

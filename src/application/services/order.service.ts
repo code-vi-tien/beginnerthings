@@ -85,7 +85,8 @@ export class OrderService implements IOrderService{
                     null,
                     item.productVariantId,
                     item.quantity,
-                    Number(item.priceSnapshot)
+                    Number(item.priceSnapshot),
+                    item.updatedAt
                 );
             });
 
@@ -128,7 +129,8 @@ export class OrderService implements IOrderService{
                     null,
                     item.productVariantId,
                     item.quantity,
-                    Number(item.priceSnapshot)
+                    Number(item.priceSnapshot),
+                    item.updatedAt
                 );
             });
 
@@ -159,16 +161,27 @@ export class OrderService implements IOrderService{
 
     async validateOrder(orderId: string) {
         try {
+            // Find order
             const order = await this.orderRepo.getOrder(orderId);
             if (!order || order.orderItems.length) {
                 throw new NotFoundException ('Order not found for this user.');
             }
 
             // Validate each item
-            const productVariantIds = order.orderItems.map(item => item.productVariantId)
-            const 
-
-
+            const productVariantIds = order.orderItems.map(item => item.productVariantId);
+                // Check if product exists
+            const products = this.productService.findProducts(productVariantIds);
+            if (order.orderItems.length !== products.length) {
+                throw new BadRequestException(`Invalid products in order`);
+            }
+                // Check if product prices fit order prices
+            const itemPrices = order.orderItems.map(item => item.priceSnapshot);
+            const itemTime = order.orderItems.map(item => item.updatedAt);
+            const productPrices = await this.productService.findProductPrices(productVariantIds, itemTime);
+            if (!itemPrices || itemPrices !== productPrices) {
+                throw new BadRequestException(`Items in order are invalid`);
+            }
+            
             return true;
 
         } catch (error) {
@@ -179,5 +192,5 @@ export class OrderService implements IOrderService{
             }
                 throw new BadRequestException('An unexpected error occurred during fetching order.');
         }
-    }
+    };
 }   

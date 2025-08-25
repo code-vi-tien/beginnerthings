@@ -6,5 +6,7 @@ import { CartItemResponseDTO } from 'src/application/dto/cart/cart-item.dto';
 export interface IProductService {
     findProductVariant(dto: ItemDTO);
 
-    validateProductVariants(productVariantIds: any[]);
+    findProducts(productVariantIds: any[]);
+
+    findProductPrices(productVariantIds: any[], updatedAt: any[]);
 } 

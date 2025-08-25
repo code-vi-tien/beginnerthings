@@ -26,9 +26,9 @@ export class PaymentService {
             };
 
             //Validate order items
-            let isNotItem = this.orderService.validateOrder(dto.orderId);
-            if (isNotItem) {
-                throw new BadRequestException(`Order with id: ${isNotItem} is invalid`)
+            let validOrder = await this.orderService.validateOrder(dto.orderId);
+            if (!validOrder) {
+                throw new BadRequestException(`Order is invalid`)
             };
 
             // Initatiate payment

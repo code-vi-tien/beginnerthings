@@ -24,4 +24,19 @@ export class ProductRepo implements IProductRepo {
             }
         });
     };
+
+    async findProductPriceSnapshot(productVariantIds: any[], updatedTime: any[]) {
+        return await this.prisma.productVariant.findMany({
+            where: {
+                id: {in: productVariantIds},
+            },
+            include: {
+                priceHistory: {
+                    where: {
+                        updatedAt: {in: updatedTime}
+                    },
+                },
+            },
+        })
+    }
 } 
