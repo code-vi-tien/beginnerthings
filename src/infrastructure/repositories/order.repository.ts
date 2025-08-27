@@ -31,7 +31,7 @@ export class OrderRepo implements IOrderRepo{
             item.id,
             item.productVariantId,
             item.quantity,
-            item.priceSnapshot.toNumber()
+            item.priceSnapshotId
         ));
 
         return new OrderEntity(
@@ -60,7 +60,7 @@ export class OrderRepo implements IOrderRepo{
             item.id,
             item.productVariantId,
             item.quantity,
-            item.priceSnapshot.toNumber()
+            item.priceSnapshotId
         ));
 
         return new OrderEntity(

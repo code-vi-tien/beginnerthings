@@ -2,17 +2,17 @@ import { BadRequestException, Injectable, NotFoundException } from "@nestjs/comm
 import { plainToInstance } from "class-transformer";
 
 import { CartDetailsEntity } from "src/domain/entities/cart-details.entity";
+import { OrderEntity, OrderItemEntity } from "src/domain/entities/order.entity";
 
 import { OrderResponseDTO } from "../dto/order/order.response.dto";
+import { CreateOrderDTO } from "../dto/order/create-order.dto";
+import { ValidateOrderDTO } from "../dto/order/validate-order.dto";
 
 import { IOrderService } from "src/domain/interfaces/services/order.service.interface";
 import { ICartService } from "src/domain/interfaces/services/cart.service.interface";
-
-import { IOrderRepo } from "src/domain/interfaces/repositories/order.repository.interface";
-import { CreateOrderDTO } from "../dto/order/create-order.dto";
-import { OrderEntity, OrderItemEntity } from "src/domain/entities/order.entity";
-import { GetOrderDTO } from "../dto/order/get-order.dto";
 import { IProductService } from "src/domain/interfaces/services/product.service.interface";
+import { IOrderRepo } from "src/domain/interfaces/repositories/order.repository.interface";
+import { GetOrderDTO } from "../dto/order/get-order.dto";
 
 
 @Injectable()
@@ -33,7 +33,7 @@ export class OrderService implements IOrderService{
  
     async getOrderSummary(userId: string, dto: CreateOrderDTO): Promise<OrderResponseDTO> {
         try {
-            const cart: CartDetailsEntity | null = await this.cartService.getCart(userId, dto.cartId);
+            const cart = await this.cartService.getCart(userId, dto.cartId);
             if (cart.cartItems.length === 0) {
                     throw new NotFoundException('Cart not found for this user.');
             };
@@ -85,8 +85,7 @@ export class OrderService implements IOrderService{
                     null,
                     item.productVariantId,
                     item.quantity,
-                    Number(item.priceSnapshot),
-                    item.updatedAt
+                    item.priceSnapshotId
                 );
             });
 
@@ -117,9 +116,9 @@ export class OrderService implements IOrderService{
         };
     };
 
-    async getOrder(orderId: string): Promise<OrderResponseDTO> {
+    async getOrder(userId: string, dto: GetOrderDTO): Promise<OrderResponseDTO> {
         try {
-            const order = await this.orderRepo.getOrder(orderId);
+            const order = await this.orderRepo.getOrder(dto.id);
             if (!order || order.orderItems.length === 0) {
                 throw new NotFoundException('Cart not found for this user.');
             }
@@ -129,8 +128,7 @@ export class OrderService implements IOrderService{
                     null,
                     item.productVariantId,
                     item.quantity,
-                    Number(item.priceSnapshot),
-                    item.updatedAt
+                    item.priceSnapshotId
                 );
             });
 
@@ -159,29 +157,25 @@ export class OrderService implements IOrderService{
         }; 
     };
 
-    async validateOrder(orderId: string) {
+    async validateOrder(dto: ValidateOrderDTO) {
         try {
             // Find order
-            const order = await this.orderRepo.getOrder(orderId);
+            const order = await this.orderRepo.getOrder(dto.id);
             if (!order || order.orderItems.length) {
                 throw new NotFoundException ('Order not found for this user.');
             }
 
-            // Validate each item
-            const productVariantIds = order.orderItems.map(item => item.productVariantId);
-                // Check if product exists
-            const products = this.productService.findProducts(productVariantIds);
-            if (order.orderItems.length !== products.length) {
-                throw new BadRequestException(`Invalid products in order`);
-            }
-                // Check if product prices fit order prices
-            const itemPrices = order.orderItems.map(item => item.priceSnapshot);
-            const itemTime = order.orderItems.map(item => item.updatedAt);
-            const productPrices = await this.productService.findProductPrices(productVariantIds, itemTime);
-            if (!itemPrices || itemPrices !== productPrices) {
-                throw new BadRequestException(`Items in order are invalid`);
-            }
-            
+            // Get and validate item price snapshot
+            const priceSnapshotIds = order.orderItems.map(item => item.productVariantId);
+            const priceSnapshot = this.productService.findProductPrices(priceSnapshotIds);
+                // Check if the priceSnapshot or correct
+            const areValid = order.orderItems.every(item => {
+                let item.priceSnapshot = this.productService.findProductVariant(item.priceSnapshotId);
+                const snapshot = priceSnapshot.find(
+                    s => s.id == item.priceSnapshotId && s.price == item.
+                )
+            })
+
             return true;
 
         } catch (error) {
@@ -191,6 +185,6 @@ export class OrderService implements IOrderService{
                 throw error; // Re-throw the specific error
             }
                 throw new BadRequestException('An unexpected error occurred during fetching order.');
-        }
+        };
     };
 }   

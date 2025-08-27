@@ -22,13 +22,13 @@ export class PaymentService {
             // Get order
             const order = await this.orderService.getOrder(dto.orderId);
             if (!order || order.orderItems.length === 0) {
-                    throw new NotFoundException('Order not found for this user.');
+                    throw new NotFoundException('Order not found or is empty.');
             };
 
             //Validate order items
-            let validOrder = await this.orderService.validateOrder(dto.orderId);
-            if (!validOrder) {
-                throw new BadRequestException(`Order is invalid`)
+            let isValid = await this.orderService.validateOrder(dto.orderId);
+            if (!isValid) {
+                throw new BadRequestException(`Order is invalid due to price or product mismatch.`)
             };
 
             // Initatiate payment
@@ -37,12 +37,12 @@ export class PaymentService {
             return plainToInstance(PaymentResponseDTO, payment);
 
         } catch (error) {
-            console.error(`Error fetching order for user`, error);
+            console.error(`Error processing payment for user`, error);
 
             if (error instanceof NotFoundException || error instanceof BadRequestException) {
                 throw error; // Re-throw the specific error
             }
-                throw new BadRequestException('An unexpected error occurred during fetching order.');
-        }
+                throw new BadRequestException('An unexpected error occurred during payment.');
+        };
     };
 }  

@@ -40,9 +40,9 @@ export class ProductService implements IProductService {
         }
     }
 
-    async findProductPrices(productVariantIds: any[], updatedTime: any[]) {
+    async findProductPrices(priceSnapshotIds: any[]) {
         try {
-            const products = await this.productRepo.findProductPriceSnapshot(productVariantIds, updatedTime);
+            const products = await this.productRepo.findProductPriceSnapshot(priceSnapshotIds);
             if (!products) {
                 throw new NotFoundException(`There's no requested products`);
             };
@@ -56,6 +56,6 @@ export class ProductService implements IProductService {
                 throw error; // Re-throw the specific error
             }
                 throw new BadRequestException('An unexpected error occurred during fetching products.');            
-        }
+        };
     };
 } 

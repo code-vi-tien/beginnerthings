@@ -95,7 +95,8 @@ model CartItem {
   productVariantId      String?
   @@unique([cartId, productVariantId])
   quantity              Int                 @default(1)
-  priceSnapshot         Decimal             @db.Decimal(10, 2)
+  priceSnapshot         PriceHistory        @relation(fields: [priceSnapshotId], references: [id])
+  priceSnapshotId       String
 
   createdAt             DateTime            @default(now())
   updatedAt             DateTime            @updatedAt
@@ -138,6 +139,8 @@ model PriceHistory {
   productVariantId      String
 
   productVariantCurrent ProductVariant?     @relation("CurrentPrice")
+  orderItems            OrderItem[]
+  cartItems             CartItem[]
 }
 
 model Address {
@@ -178,7 +181,8 @@ model OrderItem {
   productVariant        ProductVariant?     @relation(fields: [productVariantId], references: [id])
   productVariantId      String?
   quantity              Int
-  priceSnapshot         Decimal             @db.Decimal(10, 2)
+  priceSnapshot         PriceHistory        @relation(fields: [priceSnapshotId], references: [id])
+  priceSnapshotId       String              
 
   createdAt             DateTime            @default(now())
   updatedAt             DateTime            @updatedAt

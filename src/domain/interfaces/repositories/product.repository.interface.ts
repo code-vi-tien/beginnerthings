@@ -3,5 +3,5 @@ export interface IProductRepo {
 
     findManyProducts(productVariantIds: any[]);
 
-    findProductPriceSnapshot(productVariantIds: any[], updatedTime: any[]);
+    findProductPriceSnapshot(productVariantIds: any[]);
 }

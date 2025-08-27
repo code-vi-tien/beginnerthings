@@ -1,44 +1,43 @@
 import { Expose, Transform, Type } from "class-transformer";
+import { IsDecimal, IsNumber, IsString } from "class-validator";
 import { ProductDTO } from "../product/product.dto";
 import { ProductVariantDTO } from "../product/product-variant.dto";
-import { IsDate, IsNumber, IsString } from "class-validator";
 
-export class CartResponseDTO {
+export class ValidateOrderDTO {
     @Expose()
     @IsString()
     id: string;
-
+    
+    @Expose()
+    @IsString()
+    priceSnapshotId: string;
+    
     @Expose()
     @IsString()
     userId: string;
 
     @Expose()
     @IsString()
-    status: string;
+    cartId: string;
 
     @Expose()
-    @IsDate()
-    lastActiveAt: Date;
+    @IsDecimal()
+    tax: number;
 
     @Expose()
-    @IsNumber()
-    @Transform(({ obj }) => 
-        obj.cartItems.reduce((acc, item) => acc + (item.quantity * item.priceSnapshot.priceSnapshot.toNumber()), 0)
-    )
-    subtotal: number;
-
+    @IsDecimal()
+    shippingFee: number;
 
     @Expose()
-    @IsNumber()
-    @Transform(({ obj }) => obj.cartItems.length)
-    totalItemsCount: number;
+    @IsDecimal()
+    total: number;
 
     @Expose()
-    @Type(() => CartDetailsDTO)
-    cartItems: CartDetailsDTO[];
-} 
+    @Type(() => OrderItemsDTO)
+    orderItems: OrderItemsDTO[];
+}
 
-export class CartDetailsDTO {
+export class OrderItemsDTO {
     @Expose()
     @IsString()
     id: string;
@@ -48,7 +47,7 @@ export class CartDetailsDTO {
     quantity: number; 
 
     @Expose()
-    @IsNumber()
+    @IsDecimal()
     priceSnapshot: number;
 
     @Expose()
@@ -60,7 +59,7 @@ export class CartDetailsDTO {
     productVariant: ProductVariantDTO;
 
     @Expose()
-    @IsNumber()
-    @Transform(({ obj }) => obj.quantity * obj.priceSnapshot.priceSnapshot.toNumber())
+    @IsDecimal()
+    @Transform(({ obj }) => obj.quantity * obj.priceSnapshot)
     totalPrice: number;
 }
