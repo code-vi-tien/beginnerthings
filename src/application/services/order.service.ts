@@ -7,13 +7,14 @@ import { OrderEntity, OrderItemEntity } from "src/domain/entities/order.entity";
 import { OrderResponseDTO } from "../dto/order/order.response.dto";
 import { CreateOrderDTO } from "../dto/order/create-order.dto";
 import { ValidateOrderDTO } from "../dto/order/validate-order.dto";
+import { GetOrderDTO } from "../dto/order/get-order.dto";
+import { ManyProductsDTO } from "../dto/product/many-products.dto";
+import { ManyProductsResponseDTO } from "../dto/product/many-product.response.dto";
 
 import { IOrderService } from "src/domain/interfaces/services/order.service.interface";
 import { ICartService } from "src/domain/interfaces/services/cart.service.interface";
 import { IProductService } from "src/domain/interfaces/services/product.service.interface";
 import { IOrderRepo } from "src/domain/interfaces/repositories/order.repository.interface";
-import { GetOrderDTO } from "../dto/order/get-order.dto";
-
 
 @Injectable()
 export class OrderService implements IOrderService{
@@ -34,17 +35,14 @@ export class OrderService implements IOrderService{
     async getOrderSummary(userId: string, dto: CreateOrderDTO): Promise<OrderResponseDTO> {
         try {
             const cart = await this.cartService.getCart(userId, dto.cartId);
-            if (cart.cartItems.length === 0) {
-                    throw new NotFoundException('Cart not found for this user.');
-            };
 
             const { subtotal, tax, shippingFee, total } = this._calculateOrderTotals(cart);
 
             const orderItems = cart.cartItems.map(item => ({
-                productVariantId: item.productVariantId,
+                productVariantId: item.productVariant.id,
                 quantity: item.quantity, 
-                unitPrice: Number(item.priceSnapshot),
-                totalPrice: item.quantity * Number(item.priceSnapshot)
+                unitPrice: item.priceSnapshot,
+                totalPrice: item.quantity * item.priceSnapshot
             }));
 
             const orderSummaryData = {
@@ -73,25 +71,23 @@ export class OrderService implements IOrderService{
 
     async createOrder(userId: string, dto: CreateOrderDTO): Promise<OrderResponseDTO> {
         try {
-            const cart: CartDetailsEntity | null = await this.cartService.getCart(userId, dto.cartId);
-            if (cart.cartItems.length === 0) {
-                    throw new NotFoundException('Cart not found for this user.');
-            };
+            const cart = await this.cartService.getCart(userId, dto.cartId);
 
             const { subtotal, tax, shippingFee, total } = this._calculateOrderTotals(cart);
 
             const orderItems = cart.cartItems.map(item => {
                 return new OrderItemEntity(
                     null,
-                    item.productVariantId,
+                    item.productVariant.id,
+                    item.priceSnapshotId,
                     item.quantity,
-                    item.priceSnapshotId
+                    item.priceSnapshot
                 );
             });
 
             const orderEntity = new OrderEntity(
                 null,
-                userId,
+                cart.userId,
                 cart.id,
                 subtotal,
                 tax,
@@ -116,7 +112,7 @@ export class OrderService implements IOrderService{
         };
     };
 
-    async getOrder(userId: string, dto: GetOrderDTO): Promise<OrderResponseDTO> {
+    async getOrder(dto: GetOrderDTO): Promise<OrderResponseDTO> {
         try {
             const order = await this.orderRepo.getOrder(dto.id);
             if (!order || order.orderItems.length === 0) {
@@ -127,8 +123,9 @@ export class OrderService implements IOrderService{
                 return new OrderItemEntity(
                     null,
                     item.productVariantId,
+                    item.priceSnapshotId,
                     item.quantity,
-                    item.priceSnapshotId
+                    item.priceSnapshot
                 );
             });
 
@@ -157,7 +154,7 @@ export class OrderService implements IOrderService{
         }; 
     };
 
-    async validateOrder(dto: ValidateOrderDTO) {
+    async validateOrder(dto: ValidateOrderDTO): Promise<boolean> {
         try {
             // Find order
             const order = await this.orderRepo.getOrder(dto.id);
@@ -166,15 +163,40 @@ export class OrderService implements IOrderService{
             }
 
             // Get and validate item price snapshot
-            const priceSnapshotIds = order.orderItems.map(item => item.productVariantId);
-            const priceSnapshot = this.productService.findProductPrices(priceSnapshotIds);
-                // Check if the priceSnapshot or correct
+            const productVariantIds = order.orderItems.map(item => item.productVariantId);
+            const priceSnapshotIds = order.orderItems.map(item => item.priceSnapshotId);
+            // Create a request DTO
+            const manyProductsDTO = {
+                productVariantIds,
+                productPriceSnapshotIds: priceSnapshotIds
+            };
+            const productDTO = plainToInstance(ManyProductsDTO, manyProductsDTO);
+
+            // Validate the prices
+            const priceSnapshotsDTO: ManyProductsResponseDTO = await this.productService.findProductPrices(productDTO);
+
+            const priceSnapshotsMap = new Map(priceSnapshotsDTO.productPriceSnapshots.map(s => [s.id, s]));
+
             const areValid = order.orderItems.every(item => {
-                let item.priceSnapshot = this.productService.findProductVariant(item.priceSnapshotId);
-                const snapshot = priceSnapshot.find(
-                    s => s.id == item.priceSnapshotId && s.price == item.
-                )
-            })
+                const priceSnapshot = priceSnapshotsMap.get(item.priceSnapshotId);
+
+                return !!priceSnapshot
+            });
+            if (!areValid) {
+                throw new BadRequestException('Items have invalid price references');
+            };
+
+            // Check if the total prices match
+            const calculatedTotal = order.orderItems.reduce((sum, item) => {
+                const priceSnapshot = priceSnapshotsMap.get(item.priceSnapshotId);
+                return sum + (priceSnapshot.price * item.quantity);
+            }, 0);
+
+            // Using a small tolerance for floating-point comparison.
+            const isTotalCorrect = Math.abs(calculatedTotal - order.total) < 0.01;
+            if (!isTotalCorrect) {
+                throw new BadRequestException('The calculated total does not match the order total.');
+            }
 
             return true;
 

@@ -1,9 +1,10 @@
-import { ItemDTO } from '../../../application/dto/item/item.dto';
+import { ManyProductsDTO } from "src/application/dto/product/many-products.dto";
+import { ProductDTO } from "src/application/dto/product/product.dto";
 
 export interface IProductService {
-    findProductVariant(dto: ItemDTO);
+    findProductVariant(dto: ProductDTO);
 
-    findProducts(productVariantIds: any[]);
+    findProducts(dto: ManyProductsDTO);
 
-    findProductPrices(productVariantIds: any[]);
+    findProductPrices(dto: ManyProductsDTO);
 } 

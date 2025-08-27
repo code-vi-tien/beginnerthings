@@ -14,7 +14,7 @@ export class ProductRepo implements IProductRepo {
         }); 
     } ;
 
-    async findManyProducts(productVariantIds: any[]) {
+    async findManyProducts(productVariantIds: string[]) {
         return await this.prisma.productVariant.findMany({
             where: {
                 id: {in: productVariantIds}
@@ -25,7 +25,7 @@ export class ProductRepo implements IProductRepo {
         });
     };
 
-    async findProductPriceSnapshot(priceSnapshotIds: any[]) {
+    async findProductPriceSnapshot(priceSnapshotIds: string[]) {
         return await this.prisma.priceHistory.findMany({
             where: {
                 id: {in: priceSnapshotIds},

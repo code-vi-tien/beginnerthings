@@ -48,10 +48,15 @@ export class CartDetailsDTO {
     quantity: number; 
 
     @Expose()
-    @IsNumber()
-    priceSnapshot: number;
+    @IsString()
+    priceSnapshotId: string;
 
     @Expose()
+    @IsNumber()
+    @Transform(({ obj }) => obj.priceSnapshot.priceSnapshot.toNumber())
+    priceSnapshot: number;
+
+    @Expose() 
     @Type(() => ProductDTO)
     product: ProductDTO;
     

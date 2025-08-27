@@ -11,7 +11,7 @@ export class ValidateOrderDTO {
     @Expose()
     @IsString()
     priceSnapshotId: string;
-    
+     
     @Expose()
     @IsString()
     userId: string;

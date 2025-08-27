@@ -15,7 +15,8 @@ export class OrderItemEntity {
   constructor(
     public readonly id: string,
     public readonly productVariantId: string | null,
+    public readonly priceSnapshotId: string,
     public readonly quantity: number,
-    public readonly priceSnapshotId: string
+    public readonly priceSnapshot: number,
   ) {}
 } 

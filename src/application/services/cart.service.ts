@@ -54,6 +54,10 @@ export class CartService implements ICartService{
         throw new NotFoundException('Cart not found for user');
       }
 
+      if (cart.cartItem.length === 0) {
+        throw new NotFoundException('There is no item in the cart')
+      }
+
       cart = await this.cartRepo.getCartDetails(cartId);
 
       return plainToInstance(CartResponseDTO, cart, {
