@@ -6,12 +6,14 @@ import { IProductRepo } from "src/domain/interfaces/repositories/product.reposit
 import { ManyProductsResponseDTO } from "../dto/product/many-product.response.dto";
 import { ProductDTO } from "../dto/product/product.dto";
 import { ManyProductsDTO } from "../dto/product/many-products.dto";
+import { plainToInstance } from "class-transformer";
+import { ProductVariantResponseDTO } from "../dto/product/product-variant.dto";
 
 @Injectable()
 export class ProductService implements IProductService {
     constructor(private readonly productRepo: IProductRepo) {}
 
-    async findProductVariant(dto: ProductDTO) {
+    async findProductVariant(dto: ProductDTO): Promise<ProductVariantResponseDTO> {
 
         const productVariant  = await this.productRepo.findProduct(dto.productVariantId);
 
@@ -19,7 +21,7 @@ export class ProductService implements IProductService {
             throw new NotFoundException('Product not found.');
         }
 
-        return productVariant
+        return plainToInstance(ProductVariantResponseDTO, productVariant);
     };
 
     async findProducts(dto: ManyProductsDTO) {

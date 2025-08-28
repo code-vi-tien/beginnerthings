@@ -1,9 +1,11 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "src/infrastructure/database/prisma/prisma.service";
-import { ItemDTO } from "../../application/dto/item/item.dto";
 import { CartItem, Prisma } from "@prisma/client";
 import { ICartRepo } from "../../domain/interfaces/repositories/cart.repository.interface";
 import { CartDetailsEntity } from "src/domain/entities/cart-details.entity";
+import { ProductDTO } from "src/application/dto/product/product.dto";
+import { CartItemDTO } from "src/application/dto/cart/cart-item.dto";
+import { CartItemEntity } from "src/domain/entities/cart-item.entity";
 
 const cartDetails = Prisma.validator<Prisma.CartDefaultArgs>()({
     include: {
@@ -45,27 +47,26 @@ export class CartRepo implements ICartRepo {
         })
     };
 
-    async upsertCart(cartId: string, dto: ItemDTO): Promise<CartItem> {
-        const { productVariantId, quantity, price } = dto;
+    async upsertCart(cartId: string, item: CartItemEntity): Promise<CartItem> {
 
         return await this.prisma.cartItem.upsert({
             where: { 
                 cartId_productVariantId: { 
                     cartId: cartId,
-                    productVariantId: productVariantId,
+                    productVariantId: item.productVariantId,
                 },
             },
             create: {
                 cartId: cartId,
-                productVariantId: productVariantId,
-                quantity: quantity,
-                priceSnapshot: price,
+                productVariantId: item.productVariantId,
+                quantity: item.quantity,
+                priceSnapshotId: item.priceSnapshotId,
             },
             update: {
                 quantity: {
-                    increment: quantity,
+                    increment: item.quantity,
                 },
-                priceSnapshot: price,
+                priceSnapshotId: item.priceSnapshotId,
             },
         });
     };

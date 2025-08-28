@@ -9,9 +9,24 @@ export class ProductVariantDTO {
     @Expose()
     @IsNumber()
     @Transform(({ obj }) => obj.priceSnapshot.priceSnapshot.toNumber())
-    price: number;
+    priceSnapshot: number;
 
     @Expose()
     @IsString()
     variant?: string;
-} 
+}
+
+export class ProductVariantResponseDTO {
+    @Expose()
+    @IsString()
+    id: string;
+
+    @Expose()
+    @IsNumber()
+    @Transform(({ obj }) => obj.priceSnapshot.priceSnapshot.toNumber())
+    priceSnapshot: number;
+
+    @Expose()
+    @IsString()
+    variant?: string;
+}

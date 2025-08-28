@@ -23,15 +23,20 @@ export class OrderRepo implements IOrderRepo{
                 },
             },
             include: {
-                orderItems: true
-            }
+                orderItems: {
+                    include: {
+                        priceSnapshot: true
+                    } 
+                },
+            },
         });
 
         const orderItems = order.orderItems.map(item => new OrderItemEntity(
             item.id,
             item.productVariantId,
+            item.priceSnapshotId,
             item.quantity,
-            item.priceSnapshotId
+            item.priceSnapshot.priceSnapshot.toNumber()
         ));
 
         return new OrderEntity(
@@ -52,15 +57,20 @@ export class OrderRepo implements IOrderRepo{
                 id: orderId
             },
             include: {
-                orderItems: true
+                orderItems: {
+                    include: {
+                        priceSnapshot: true
+                    }
+                }
             }
         });
 
         const orderItems = order.orderItems.map(item => new OrderItemEntity(
             item.id,
             item.productVariantId,
+            item.priceSnapshotId,
             item.quantity,
-            item.priceSnapshotId
+            item.priceSnapshot.priceSnapshot.toNumber()
         ));
 
         return new OrderEntity(

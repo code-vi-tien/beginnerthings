@@ -1,10 +1,9 @@
-import { ItemDTO } from '../../../application/dto/item/item.dto';
 import { CartResponseDTO } from '../../../application/dto/cart/cart.response.dto';
-import { CartItemResponseDTO } from 'src/application/dto/cart/cart-item.dto';
+import { CartItemDTO, CartItemResponseDTO } from 'src/application/dto/cart/cart-item.dto';
 
 
 export interface ICartService {
-    addItem(userId: string, dto: ItemDTO): Promise<CartItemResponseDTO>;
+    addItem(userId: string, dto: CartItemDTO): Promise<CartItemResponseDTO>;
     
     getCart(userId: string, cartId: string): Promise<CartResponseDTO>;
 

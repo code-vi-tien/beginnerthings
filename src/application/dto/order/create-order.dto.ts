@@ -6,4 +6,8 @@ export class CreateOrderDTO {
     @Expose()
     @IsString()
     cartId: string;
+
+    @Expose()
+    @IsString()
+    address: string;
 }

@@ -8,6 +8,9 @@ import { IOrderService } from "src/domain/interfaces/services/order.service.inte
 import { IAdressService } from "src/domain/interfaces/services/address.service.interface";
 
 import { IPaymentRepo } from "src/domain/interfaces/repositories/payment.repository.interface";
+import { GetOrderDTO } from "../dto/order/get-order.dto";
+import { ValidateOrderDTO } from "../dto/order/validate-order.dto";
+import { PaymentEntity } from "src/domain/entities/payment.entity";
 
 @Injectable()
 export class PaymentService {
@@ -19,20 +22,36 @@ export class PaymentService {
 
     async execute(userId: string, dto: CreatePaymentDTO): Promise<PaymentResponseDTO> {
         try {
+            // Mapping from CreatePaymentDTO to GetOrderDTO
+            const orderDTO = new GetOrderDTO;
+            orderDTO.id = dto.orderId;
             // Get order
-            const order = await this.orderService.getOrder(dto.orderId);
+            const order = await this.orderService.getOrder(orderDTO);
             if (!order || order.orderItems.length === 0) {
                     throw new NotFoundException('Order not found or is empty.');
             };
 
             //Validate order items
-            let isValid = await this.orderService.validateOrder(dto.orderId);
+                // Mapping from OrderResponseDTO to ValidateOrderDTO
+            const validateOrderDTO = new ValidateOrderDTO;
+            validateOrderDTO.id = order.id;
+            
+            const isValid = await this.orderService.validateOrder(validateOrderDTO);
             if (!isValid) {
                 throw new BadRequestException(`Order is invalid due to price or product mismatch.`)
             };
 
+            // Retrieve address
+            
+
             // Initatiate payment
-            const payment = await this.paymentRepo.createPayment(userId, order);
+            const paymentEntity = new PaymentEntity(
+                userId,
+                dto.orderId,
+                dto.orderId,
+                order.total
+            )
+            const payment = await this.paymentRepo.createPayment(paymentEntity);
 
             return plainToInstance(PaymentResponseDTO, payment);
 

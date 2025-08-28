@@ -1,5 +1,13 @@
 export class AddressEntity {
     constructor (
+        public readonly userId: string,
+        public readonly address: string,
+        public readonly district: string,
+        public readonly city: string
+    ) {};
+}
+export class AddressResponseEntity {
+    constructor (
         public readonly id: string,
         public readonly userId: string,
         public readonly address: string,
@@ -15,4 +23,4 @@ export class AddressEntity {
         */
     return fee 
     };
-} 
+}

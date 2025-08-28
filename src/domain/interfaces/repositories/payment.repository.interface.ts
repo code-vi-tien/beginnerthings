@@ -1,5 +1,6 @@
  import { Payment } from '@prisma/client';
+import { PaymentEntity } from 'src/domain/entities/payment.entity';
 
  export interface IPaymentRepo {
-    createPayment(userId: string, orderData): Promise<Payment>;
+    createPayment(paymentEntity: PaymentEntity): Promise<Payment>;
  }

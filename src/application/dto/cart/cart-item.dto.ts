@@ -1,5 +1,34 @@
-import { Expose } from "class-transformer";
+import { Expose, Transform } from "class-transformer";
 import { IsInt, IsString, IsNotEmpty, Min, IsDecimal } from "class-validator";
+
+export class CartItemDTO {
+    @Expose()  
+    @IsString()
+    id: string;
+
+    @Expose()
+    @IsString()
+    @IsNotEmpty()
+    productVariantId: string;
+
+    @Expose()
+    @IsString()
+    variant?: string;
+
+    @Expose()
+    @IsInt()
+    @Min(1)
+    quantity: number;
+
+    @Expose()
+    @IsString()
+    priceSnapshotId: string;
+
+    @Expose()
+    @IsDecimal()
+    @Transform(({ obj }) => obj.priceSnapshot.priceSnapshot.toNumber())
+    priceSnapshot: number;
+}
 
 export class CartItemResponseDTO {
     @Expose()
@@ -22,7 +51,8 @@ export class CartItemResponseDTO {
 
     @Expose()
     @IsDecimal()
-    price: string;
+    @Transform(({ obj }) => obj.priceSnapshot.priceSnapshot.toNumber())
+    priceSnapshot: number;
 
     @Expose()
     @IsString()

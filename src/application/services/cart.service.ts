@@ -1,14 +1,15 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 
-import { CartItemResponseDTO } from 'src/application/dto/cart/cart-item.dto';
-import { ItemDTO } from '../dto/item/item.dto';
+import { CartItemDTO, CartItemResponseDTO } from 'src/application/dto/cart/cart-item.dto';
+
 import { CartResponseDTO } from '../dto/cart/cart.response.dto';
 
 import { ICartRepo } from 'src/domain/interfaces/repositories/cart.repository.interface';
 import { ICartService } from 'src/domain/interfaces/services/cart.service.interface';
 import { IProductService } from 'src/domain/interfaces/services/product.service.interface';
-
+import { ProductDTO } from '../dto/product/product.dto';
+import { CartItemEntity } from 'src/domain/entities/cart-item.entity';
 
 @Injectable()
 export class CartService implements ICartService{
@@ -17,23 +18,29 @@ export class CartService implements ICartService{
     private readonly productService: IProductService
   ) {}
   
-  async addItem(userId: string, dto: ItemDTO): Promise<CartItemResponseDTO> {
+  async addItem(userId: string, dto: CartItemDTO): Promise<CartItemResponseDTO> {
     try {
-      const productVariant = await this.productService.findProductVariant(dto);
-      /* Simple request validation */
-      if (dto.quantity <= 0) {
-        throw new BadRequestException('Quantity must be a positive number.');
-      } 
-      if (dto.quantity > productVariant.stock ) {
-        throw new BadRequestException(`Not enough stock available`);
+      // Changing the dto
+      const productVariantDTO = new ProductDTO();
+      productVariantDTO.productVariantId = dto.productVariantId;
+      // Get the product with its variant
+      const productVariant = await this.productService.findProductVariant(productVariantDTO);
+      if (!productVariant) {
+        throw new BadRequestException("Item doesn't exist");
       }
+
       /* Validate cart and cart items */
       let cart = await this.cartRepo.findCartByUserId(userId);
       if (!cart) {
         cart = await this.cartRepo.createCart(userId);
       }
 
-      const cartItem = await this.cartRepo.upsertCart(cart.id, dto);
+      const item = new CartItemEntity(
+        dto.productVariantId,
+        dto.quantity,
+        dto.priceSnapshotId,
+      )
+      const cartItem = await this.cartRepo.upsertCart(cart.id, item);
 
       return new CartItemResponseDTO(cartItem); 
 

@@ -1,7 +1,6 @@
 import { CartItem } from '@prisma/client';
-import { ItemDTO } from 'src/application/dto/item/item.dto';
 import { CartDetailsEntity } from 'src/domain/entities/cart-details.entity';
-
+import { CartItemEntity } from 'src/domain/entities/cart-item.entity';
 
 export interface ICartRepo {
     createCart(userId: string);
@@ -10,7 +9,7 @@ export interface ICartRepo {
 
     findCartByUserId(userId: string);
 
-    upsertCart(cartId: string, dto: ItemDTO);
+    upsertCart(cartId: string, item: CartItemEntity);
 
     getCartDetails(userId: string): Promise<CartDetailsEntity>;
     
