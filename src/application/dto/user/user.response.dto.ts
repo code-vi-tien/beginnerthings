@@ -1,4 +1,4 @@
-import { Expose } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 import { IsEmail, IsEnum, IsString } from 'class-validator';
 
 export class UserResponseDTO {
@@ -9,6 +9,9 @@ export class UserResponseDTO {
   @Expose()
   @IsEmail()
   email: string;
+
+  @Exclude()
+  passwordHash: string;
 
   @Expose()
   @IsString()
