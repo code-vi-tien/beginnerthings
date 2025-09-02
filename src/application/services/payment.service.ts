@@ -22,6 +22,9 @@ export class PaymentService {
 
     async execute(userId: string, dto: CreatePaymentDTO): Promise<PaymentResponseDTO> {
         try {
+            // Get address and orderId
+            const address = await this.addressService.getAddress(userId);
+
             // Mapping from CreatePaymentDTO to GetOrderDTO
             const orderDTO = new GetOrderDTO;
             orderDTO.id = dto.orderId;
@@ -42,7 +45,7 @@ export class PaymentService {
             };
 
             // Retrieve address
-            
+
 
             // Initatiate payment
             const paymentEntity = new PaymentEntity(
